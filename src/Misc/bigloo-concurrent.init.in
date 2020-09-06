@@ -1,0 +1,6 @@
+(declare-library! 'bigloo-concurrent 
+   :version "0.3"
+   :srfi '(bigloo-concurrent)
+   :basename "bigloo-concurrent"
+   :module-eval 'bigloo-concurrent/make_lib)
+

@@ -1,0 +1,52 @@
+* bigloo-concurrent -- A Concurrency library for Bigloo
+  This library is a Bigloo port of Takashi Kato's [[https://github.com/ktakashi/scheme-concurrent][scheme-concurrent]]
+  library.
+
+  Currently, all tests pass for the native backend but a couple tests
+  are still not passing for the jvm backend. 
+
+** Documentation
+  The best documentation at this point is Takashi Kato's original
+  [[http://ktakashi.github.io/sagittarius-ref.html#concurrent][documentation]]. Bigloo-specific documentation still needs to be
+  created.
+
+** Requirements
+   bigloo-concurrent currently depends on a modified version of the
+   bigloo-included pthread library found [[https://github.com/donaldsonjw/bigloo-1/tree/pthread_modifications][here]][fn::The changes have
+   been submitted [[https://github.com/manuel-serrano/bigloo/pull/47][upstream]]] and a bigloo port of
+   [[https://github.com/donaldsonjw/srfi117][srfi117]].
+   
+** Building
+    Both the Bigloo native and jvm backends are supported. To build the native library, execute
+    
+    ~make~
+    
+    To build the JVM library, execute
+
+    ~make jvm~
+
+    To build both, execute
+ 
+    ~make all~
+
+** Installation
+   To install the library, execute 
+
+   ~make install~
+
+   This by default installs the library into /usr/lib/bigloo. If you have Bigloo installed to a different prefix, execute 
+   
+   ~make install DESTDIR=/path/prefix~
+
+   This will result in the library being installed /path/prefix/lib/bigloo.
+
+** Tests
+   To run the tests, you will need to install [[https://github.com/donaldsonjw/btest][btest]]. Once this is done, the native tests can be executed with 
+   
+   ~make test~
+
+   and the jvm tests can be executed with 
+
+   ~make jtest~
+
+
