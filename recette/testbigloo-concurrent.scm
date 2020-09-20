@@ -286,6 +286,7 @@
         (map thread-start-joinable! (list t1 t2))
         (sleep 500000)
         (assert-equal?  1 (thread-pool-executor-pool-size e))
+        
         (assert-true (with-handler (lambda (e)
                                       (if (and (isa? e uncaught-exception)
                                                (with-access::uncaught-exception e (reason)
@@ -293,8 +294,7 @@
                                           #t
                                           (raise e)))
                                    ;; one of them must be failed
-                                   (begin (thread-join! t1) (thread-join! t2))))
-        ))
+                                   (begin (thread-join! t1) (thread-join! t2))))))
 
     (test "executor-submit!"
        (let ((e (make-thread-pool-executor 1 push-future-handler))
@@ -330,7 +330,7 @@
             (f1 (future (class <executor-future>) (thread-sleep! 10000)))
             (f2 (future (class <executor-future>) (thread-sleep! 10000)))
             (f3 (future (class <executor-future>) (thread-sleep! 10000))))
-           (assert-true (executor? (execute-future! e f1)))
+         (assert-true (executor? (execute-future! e f1)))
          (assert-true (executor? (execute-future! e f2)))
          (assert-true (executor? (execute-future! e f3)))
          (assert-equal? 'timeout (future-get f1 1 'timeout))
@@ -384,20 +384,12 @@
        (shared-queue-put! sq1 #t)
        (shared-queue-put! sq2 #t)
        (assert-true  (shutdown-executor! e)))
-    )
+     )
    
    )
 
 
 (define (main args)
-
-   ; (let ((e (make-thread-pool-executor 3))
-   ;          (f1 (future (class <executor-future>) (thread-sleep! 10000)))
-            ;(f2 (future (class <executor-future>) (thread-sleep! 10000)))
-         ;(f3 (future (class <executor-future>) (thread-sleep! 10000)))
- ;         )
- ;     (print "executor: " e)
-  ;    (print "is an executor?: " (executor? (execute-future! e f1))))
    (let ((tr (instantiate::terminal-test-runner (suite bigloo-concurrent-tests))))
       (if (test-runner-execute tr #t) 0 -1))
    )

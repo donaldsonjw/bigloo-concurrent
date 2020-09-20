@@ -97,30 +97,12 @@
    (let ((state (mutex-state m)))
       (or (eq? 'locked state)
           (not (symbol? state)))))
-(cond-expand
-   (bigloo-c
-    (define-inline (mutex-lock-recursively! mutex)
-       (mutex-lock! mutex))
-    (define (mutex-unlock-recursively! mutex)
-       (mutex-unlock! mutex)))
-   (bigloo-jvm
-    (define-inline (mutex-lock-recursively! mutex)
-       (let ((p (mutex-specific mutex)))
-          (if (and (mutex-locked? mutex)
-                   (and (pair? p)
-                        (eq? (car p) (current-thread))))
-              (let ((n (cdr p)))
-                 (set-cdr! p (+ n 1)))
-              (begin
-                 (mutex-lock! mutex)
-                 (mutex-specific-set! mutex (cons (current-thread) 0))))))
-    
-    (define-inline (mutex-unlock-recursively! mutex)
-       (let* ((p (mutex-specific mutex))
-              (n (cdr p)))
-          (set-cdr! p (- n 1))
-                 (when (= n 0)
-             (mutex-unlock! mutex))))))
+
+(define-inline (mutex-lock-recursively! mutex)
+   (mutex-lock! mutex))
+
+(define (mutex-unlock-recursively! mutex)
+   (mutex-unlock! mutex))
 
 ;;;; executor
 (define-inline (executor? v)

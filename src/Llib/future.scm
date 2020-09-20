@@ -46,7 +46,8 @@
          thunk::procedure
          result
          (state::symbol (default 'created))
-         (canceller (default #f)))
+         (canceller (default #f))
+         (mutex (default (make-mutex))))
       (class <simple-future>::<future>)
       (future? v)
       (future-get future::<future> . opt)
@@ -127,25 +128,34 @@
 
 ;;;; future accessors to match original record type
 (define-inline (future-state f::<future>)
-   (-> f state))
+   (synchronize (-> f mutex)
+      (-> f state)))
 
 (define-inline (future-state-set! f::<future> state)
-   (set! (-> f state) state))
+   (synchronize (-> f mutex)
+      ;; don't overwrite a terminal state
+      (unless (or (eq? (-> f state) 'terminated)
+                  (eq? (-> f state) 'done)))
+      (set! (-> f state) state)))
 
 (define-inline (future-thunk f::<future>)
    (-> f thunk))
 
 (define-inline (future-result f::<future>)
-   (-> f result))
+   (synchronize (-> f mutex)
+      (-> f result)))
 
 (define-inline (future-result-set! f::<future> result)
-   (set! (-> f result) result))
+   (synchronize (-> f mutex)
+      (set! (-> f result) result)))
 
 (define-inline (future-canceller f::<future>)
-   (-> f canceller))
+   (synchronize (-> f mutex)
+      (-> f canceller)))
 
 (define-inline (future-canceller-set! f::<future> canceller)
-   (set! (-> f canceller) canceller))
+   (synchronize (-> f mutex)
+      (set! (-> f canceller) canceller)))
 
 ;;;; end future accessors
 (define (simple-invoke thunk f q)
@@ -154,7 +164,11 @@
 		      (future-state-set! f 'finished)
 		      (shared-box-put! q e)))
          (let ((r (thunk)))
-            (future-state-set! f 'finished)
+            (let ((curr-thread::pthread (current-thread)))
+               (cond ((isa? (-> curr-thread end-exception) terminated-thread-exception)
+                      (future-state-set! f 'terminated))
+                     (else
+                      (future-state-set! f 'finished))))
             (shared-box-put! q r)))))
 
 (define (make-simple-future thunk::procedure)
@@ -195,7 +209,7 @@
                    (future-result-set! future (apply r future opt))
                    (future-result future))
                   (else r))))))
-  ;; kinda dummy
+;; kinda dummy
 (define (future-cancel future)
    (unless (eq? (future-state future) 'done)
       (future-state-set! future 'terminated))
@@ -207,5 +221,6 @@
 
 (define (future-done? future) (eq? (future-state future) 'done))
 
-(define (future-cancelled? future) (eq? (future-state future) 'terminated))
+(define (future-cancelled? future)
+   (eq? (future-state future) 'terminated))
 

@@ -6,6 +6,7 @@
          (lambda () expr ...)
          (make-shared-box)
          'created
-         #f))
+         #f
+         (make-mutex)))
        ((_ expr ...)
         (make-simple-future (lambda () expr ...)))))
