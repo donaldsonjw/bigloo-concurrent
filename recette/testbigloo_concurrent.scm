@@ -38,13 +38,14 @@
                                    (set! balance (+ balance a))
                                    (shared-queue-put! out (cons 0 balance))
                                    (loop)))))
-                        ((close) #t)
+                        ((close)
+                         #t)
                         (else "invalid message"0)))))
             
             (let ((t (make-thread process)))
                (thread-start-joinable! t)
                shared-queue)) 
-         
+
          (define recepit (make-shared-queue))
          (define client (open-account 1000 recepit))
          (define eager-client
@@ -53,13 +54,12 @@
                   (lambda ()
                      (assert-equal? '(100 . 900)
                         (shared-queue-get! recepit))))))
-         
+
          (shared-queue-put! client '(withdrow 100))
          (shared-queue-put! client '(deposite 100))
          (shared-queue-put! client '(close))
          ;; wait until eager client is done
          (thread-join! eager-client)
-         
        (assert-equal?  1 (shared-queue-size recepit))
        (assert-equal? '(0 . 1000) (shared-queue-get! recepit))
        (assert-true (shared-queue-empty? recepit))))
@@ -325,7 +325,7 @@
           (map future-get f*)
           (assert-equal? '(3 2 1) (map future-get f*))))
 
-   (test  "shutdown"
+   (test  "shutdown1"
       (let ((e (make-thread-pool-executor 3))
             (f1 (future (class <executor-future>) (thread-sleep! 10000)))
             (f2 (future (class <executor-future>) (thread-sleep! 10000)))
@@ -337,12 +337,12 @@
          (assert-equal? 3 (thread-pool-executor-pool-size e))
          (assert-true  (shutdown-executor! e))
          (assert-equal?  0 (thread-pool-executor-pool-size e))
-         (assert-true (future-cancelled? f1))
+         (assert-true (future-done? f1))
          (assert-true (future-cancelled? f2))
-         (assert-true (future-cancelled? f3))
-         )
+         (assert-true (future-cancelled? f3))))
 
-    (let ((e (make-thread-pool-executor 1 terminate-oldest-handler))
+   (test "shutdown2"
+      (let ((e (make-thread-pool-executor 1 terminate-oldest-handler))
           (f1 (future (class <executor-future>) (thread-sleep! 10000)))
           (f2 (future (class <executor-future>) (thread-sleep! 10000)))
           (f3 (future (class <executor-future>) (thread-sleep! 10000))))
@@ -354,9 +354,10 @@
        (assert-equal?  1 (thread-pool-executor-pool-size e))
        (assert-true (shutdown-executor! e))
        (assert-equal? 0 (thread-pool-executor-pool-size e))
-       (assert-true (future-cancelled? f3)))
+       (assert-true (future-cancelled? f3))))
 
-    (let ((e (make-thread-pool-executor 1 terminate-oldest-handler)))
+   (test "shutdown3"
+      (let ((e (make-thread-pool-executor 1 terminate-oldest-handler)))
        (assert-true
           (dotimes (i 100)
              (let ((f1 (future (class <executor-future>) 
@@ -368,9 +369,10 @@
                 (execute-future! e f1)
                 (execute-future! e f2)
                 (execute-future! e f3))))
-       (assert-true (shutdown-executor! e)))
+       (assert-true (shutdown-executor! e))))
 
-    (let* ((e (make-thread-pool-executor 1 push-future-handler))
+   (test "shutdown4"
+      (let* ((e (make-thread-pool-executor 1 push-future-handler))
            (sq1 (make-shared-queue))
            (sq2 (make-shared-queue))
            (f1 (future (class <executor-future>) (shared-queue-get! sq1)))
@@ -383,16 +385,12 @@
        ;; let it finish
        (shared-queue-put! sq1 #t)
        (shared-queue-put! sq2 #t)
-       (assert-true  (shutdown-executor! e)))
-     )
-   
-   )
+       (assert-true  (shutdown-executor! e)))))
 
 
 (define (main args)
    (let ((tr (instantiate::terminal-test-runner (suite bigloo-concurrent-tests))))
-      (if (test-runner-execute tr #t) 0 -1))
-   )
+      (if (test-runner-execute tr #t) 0 -1)))
 
 
 

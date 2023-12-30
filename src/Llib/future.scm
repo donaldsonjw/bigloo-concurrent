@@ -135,8 +135,8 @@
    (synchronize (-> f mutex)
       ;; don't overwrite a terminal state
       (unless (or (eq? (-> f state) 'terminated)
-                  (eq? (-> f state) 'done)))
-      (set! (-> f state) state)))
+                  (eq? (-> f state) 'done))
+         (set! (-> f state) state))))
 
 (define-inline (future-thunk f::<future>)
    (-> f thunk))
