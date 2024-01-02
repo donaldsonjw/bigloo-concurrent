@@ -276,11 +276,11 @@
      (let* ((e (make-thread-pool-executor 1))
             (t1 (make-thread (lambda ()
                                 (let ((f (future (class <executor-future>) 
-                                            (thread-sleep! 1000000))))
+                                            (thread-sleep! 10000))))
                                    (execute-future! e f)))))
             (t2 (make-thread (lambda ()
                                (let ((f (future (class <executor-future>)
-                                           (thread-sleep! 1000000))))
+                                           (thread-sleep! 10000))))
                                   (execute-future! e f))))))  
         ;; hope we get there
         (map thread-start-joinable! (list t1 t2))
