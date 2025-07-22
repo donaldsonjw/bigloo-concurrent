@@ -12,36 +12,26 @@
    [[https://github.com/donaldsonjw/srfi117][srfi117]].
    
 ** Building
-    Both the Bigloo native and jvm backends are supported. To build the native library, execute
-    
-    ~make~
-    
-    To build the JVM library, execute
+    Both the Bigloo native and jvm backends are supported. To build, run
+#+begin_src shell
+  ./configure --prefix<installation path prefix>; make 
+#+end_src 
+where =<installation path prefix>= is the desired installation path
+prefix (e.g, =/usr/local=). You usually want the path prefix to match
+that used by Bigloo itself.
 
-    ~make jvm~
-
-    To build both, execute
- 
-    ~make all~
 
 ** Installation
-   To install the library, execute 
 
-   ~make install~
-
-   This by default installs the library into /usr/lib/bigloo. If you have Bigloo installed to a different prefix, execute 
-   
-   ~make install DESTDIR=/path/prefix~
-
-   This will result in the library being installed /path/prefix/lib/bigloo.
+  To install the library, execute:
+#+begin_src shell
+  make install
+#+end_src 
 
 ** Tests
-   To run the tests, you will need to install [[https://github.com/donaldsonjw/btest][btest]]. Once this is done, the native tests can be executed with 
-   
-   ~make test~
+To run the tests execute:
 
-   and the jvm tests can be executed with 
-
-   ~make jtest~
-
+  #+begin_src shell
+  make test
+#+end_src
 
