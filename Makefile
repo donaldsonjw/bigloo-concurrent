@@ -165,6 +165,7 @@ define generate_scm_dependencies
   $(shell cd $1; bgldepend -fno-mco `find -name '*.scm'  -printf '%P\n'`)
 endef
 
+snake_to_kebab = $(subst _,-,$(1))
 
 # The build targets depend on the directory structure of the project.
 # The directories found in src/bin and src/lib are taken to be the binary and
@@ -520,29 +521,29 @@ endef
 $(foreach T, $(TEST_TARGETS), $(eval $(call test_jbin_TARGET_RULE,$T)))
 
 define lib_TARGET_RULES
-$(BUILD_LIB_DIR)/lib$1_$2-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.heap $$(LIB_$1_OBJECTS_$2)
+$(BUILD_LIB_DIR)/lib$1_$2-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap) $$(LIB_$1_OBJECTS_$2)
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(BIGLOO) -y -o $$@  $$(LIB_$1_BLFLAGS_$2) $$(LIB_$1_INCLUDE_FLAGS) -ldopt $$(LIB_$1_BLDFLAGS_$2)  -ldpostopt -Wl,-soname=`basename $$@` $$(LIB_$1_OBJECTS_$2)
 
-$(BUILD_LIB_DIR)/lib$1_$2-$(VERSION).$(STATIC_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.heap $$(LIB_$1_OBJECTS_$2) 
+$(BUILD_LIB_DIR)/lib$1_$2-$(VERSION).$(STATIC_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap) $$(LIB_$1_OBJECTS_$2) 
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(AR) $(ARFLAGS) $$@ $$(LIB_$1_OBJECTS_$2)
 	@$(RANLIB) $$@
 
-$(BUILD_LIB_DIR)/lib$1_e$2-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.heap $$(LIB_$1_HEAP_OBJECTS_$2)  
+$(BUILD_LIB_DIR)/lib$1_e$2-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap) $$(LIB_$1_HEAP_OBJECTS_$2)  
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(BIGLOO) -y -o $$@  $$(LIB_$1_BLFLAGS_$2) $$(LIB_$1_INCLUDE_FLAGS) -ldopt $$(LIB_$1_BLDFLAGS_$2) -ldpostopt -Wl,-soname=`basename $$@` $$(LIB_$1_HEAP_OBJECTS_$2)
 
-$(BUILD_LIB_DIR)/lib$1_$2_mt-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.heap $$(LIB_$1_OBJECTS_$2) 
+$(BUILD_LIB_DIR)/lib$1_$2_mt-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap) $$(LIB_$1_OBJECTS_$2) 
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(BIGLOO) -y -o $$@ -eval '(set! *multi-threaded-gc?* #t)' \
                    $$(LIB_$1_BLFLAGS_$2) $$(LIB_$1_INCLUDE_FLAGS) -ldopt $$(LIB_$1_BLDFLAGS_$2)  -ldpostopt -Wl,-soname=`basename $$@` $$(LIB_$1_OBJECTS_$2)
 
-$(BUILD_LIB_DIR)/lib$1_e$2_mt-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.heap $$(LIB_$1_HEAP_OBJECTS_$2)
+$(BUILD_LIB_DIR)/lib$1_e$2_mt-$(VERSION).$(SHARED_LIBRARY_EXT): $(AFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap) $$(LIB_$1_HEAP_OBJECTS_$2)
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(BIGLOO) -y -o $$@ -eval '(set! *multi-threaded-gc?* #t)' \
@@ -552,12 +553,12 @@ endef
 $(foreach T,$(LIB_TARGETS),$(foreach V,$(VARIANT_SUFFIXES),$(eval $(call lib_TARGET_RULES,$T,$V))))
 
 define zip_TARGET_RULES
-$(BUILD_LIB_DIR)/$1_$2-$(VERSION).zip: $(AFILE) $(JFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.jheap $$(ZIP_$1_CLASSES_$2) $$(ZIP_$1_JAVA_CLASSES_$2) 
+$(BUILD_LIB_DIR)/$1_$2-$(VERSION).zip: $(AFILE) $(JFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.jheap) $$(ZIP_$1_CLASSES_$2) $$(ZIP_$1_JAVA_CLASSES_$2) 
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(JAR) $(JARFLAGS) $$@  $$(ZIP_$1_CLASSES_$2:.class_$2/%=-C .class_$2/ .)
 
-$(BUILD_LIB_DIR)/$1_e$2-$(VERSION).zip: $(AFILE) $(JFILE) $(BUILD_LIB_DIR)/$1.init $(BUILD_LIB_DIR)/$1.jheap $$(ZIP_$1_HEAP_CLASSES_$2) 
+$(BUILD_LIB_DIR)/$1_e$2-$(VERSION).zip: $(AFILE) $(JFILE) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init) $(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.jheap) $$(ZIP_$1_HEAP_CLASSES_$2) 
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$(JAR) $(JARFLAGS) $$@ -C .class_$2/ bigloo/lib/$1/$(HEAP_SRC_BASE).class
@@ -570,7 +571,7 @@ $(foreach T,$(LIB_TARGETS),$(foreach V,$(VARIANT_SUFFIXES),$(eval $(call zip_TAR
 # the macro files correctly; I cannot capture % patterns in the find command used
 # to gather the library macros.
 define init_TARGET_RULES
-$(BUILD_LIB_DIR)/$1.init: $(SRC_LIB_DIR)/$1/$(LIB_INIT_TEMPLATE)  $$(call find_files,$(SRC_LIB_DIR)/$1,'*.sch')
+$(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.init): $(SRC_LIB_DIR)/$1/$(LIB_INIT_TEMPLATE)  $$(call find_files,$(SRC_LIB_DIR)/$1,'*.sch')
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@cat $$^ | $$(SED) -e "s|@VERSION@|$$(VERSION)|" > $$@
@@ -581,12 +582,12 @@ $(foreach T, $(LIB_TARGETS), $(eval $(call init_TARGET_RULES,$T)))
 
 # Generate the heap and jheap rules for each library target
 define heap_TARGET_RULES
-$(BUILD_LIB_DIR)/$1.heap: $(SRC_LIB_DIR)/$1/$(HEAP_SRC_BASE).scm
+$(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.heap): $(SRC_LIB_DIR)/$1/$(HEAP_SRC_BASE).scm
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$$(BIGLOO)  $$(HEAPFLAGS) $1 $$^ -addheap $$@ $$(LIB_$1_INCLUDE_FLAGS)
 
-$(BUILD_LIB_DIR)/$1.jheap: $(SRC_LIB_DIR)/$1/$(HEAP_SRC_BASE).scm
+$(BUILD_LIB_DIR)/$(call snake_to_kebab,$1.jheap): $(SRC_LIB_DIR)/$1/$(HEAP_SRC_BASE).scm
 	@echo "building $$@..."
 	@if [ ! -d "$$(@D)" ]; then  mkdir -p $$(@D); fi
 	@$$(BIGLOO) -jvm $$(HEAPFLAGS) $1 $$^ -addheap $$@ $$(LIB_$1_INCLUDE_FLAGS)

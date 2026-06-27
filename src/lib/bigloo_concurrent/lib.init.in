@@ -8,6 +8,8 @@ Copyright 2025,  Joseph Donaldson
 (declare-library! 'bigloo-concurrent 
    :version "@VERSION@"
    :srfi '(bigloo-concurrent)
-   :basename "bigloo-concurrent"
+   :basename "bigloo_concurrent"
    :module-eval 'bigloo-concurrent_make_lib)
 
+
+   
